@@ -1,0 +1,3 @@
+[INFO] Completed first episodes: 100/100
+[RESULT] Episode reward total: mean=129.568288, std=29.684868
+[RESULT] Episode steps: mean=918.640000, std=181.034998
