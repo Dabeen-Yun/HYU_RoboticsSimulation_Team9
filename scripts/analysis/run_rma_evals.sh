@@ -8,7 +8,7 @@ cd "$(dirname "$0")/../.."
 
 BASE=logs/rsl_rl/ant/2026-09-28_14-21-51_ant_baseline/model_999.pt
 V4=$(ls -d logs/rsl_rl/ant_rough/*_v4_warm | tail -1)/model_1999.pt
-TEACHER=$(ls -d logs/rsl_rl/ant_rma/*_teacher | tail -1)/model_1999.pt
+TEACHER=logs/rsl_rl/ant_rma/2026-10-05_10-14-09_teacher/model_1999.pt
 STUDENT=logs/rsl_rl/ant_rma/student_plain/model_0.pt
 STUDENT_GATED=logs/rsl_rl/ant_rma/student_gated/model_0.pt
 
