@@ -295,3 +295,63 @@ python scripts/analysis/make_student_checkpoints.py export --student logs/rsl_rl
 **최종 정책:** `logs/rsl_rl/ant_rma/final/model_0.pt` (시드 42 미세조정 1500 iter, `--agent rsl_rl_finetune_cfg_entry_point`)
 - 공식 출력: 기존 환경 **147.14 ± 29.21**, 처음 보는 환경 **59.80 ± 29.88** (`results/official/final_*.txt`)
 - **선택 기준:** 같은 방법으로 만든 3개 중 **기존 환경 점수가 가장 높은 것**을 골랐습니다. 처음 보는 환경 점수는 선택에 쓰지 않았습니다. 이 실행의 처음 보는 환경 점수(59.8)는 3개 중 가장 낮으므로, 발표에서는 **3회 평균(138.4 / 64.0)을 주 결과로** 제시합니다.
+
+## 14. [ant_robust_bundle] 새 환경(Rough 쌍)에서 처음부터 학습
+
+번들 환경을 병합했습니다(`ant_robust_env_cfg.py`, `checkpoints/ant_robust_bundle/`, `__init__.py`의 `[ant_robust_bundle]` 구역). 그중 번들 작성자의 Rough 쌍에서 우리 방법을 처음부터 학습했습니다.
+- **학습:** `Isaac-Ant-RMA-Bundle-DR-Rough-v0`. 번들의 `Isaac-Ant-DR-Rough-v0`에 우리 센서만 추가했습니다.
+- **검증:** `Isaac-Ant-RMA-Bundle-Rough-v0`. 번들의 `Isaac-Ant-Test-Rough-v0`에 우리 센서만 추가했습니다.
+- **학습 조건:** 단계마다 4096 envs × 1000 iter, seed 42로 처음부터 학습했습니다(교사 PPO → 학생 따라 배우기 → 조심스러운 미세조정).
+- **평가:** seed 24, 100마리. 실행 스크립트는 `scripts/analysis/run_bundle_rough_pipeline.sh`입니다.
+
+| 정책 | 검증 환경 (Test-Rough) | 전진 거리 | 넘어짐 | 원래 환경 (Isaac-Ant-v0) |
+|---|---|---|---|---|
+| 강의 원본 baseline | 26.80 ± 14.16 | 26.7 m | 22% | 129.57 |
+| 교사 (정답 물성 관측) | 53.70 ± 15.74 | 49.2 m | 13% | — |
+| 학생 (미세조정 전) | **55.96 ± 12.55** | 51.1 m | 5% | — |
+| **우리 모델 (최종, 미세조정 후)** | **52.66 ± 13.82** (+96%, p≈10⁻²⁸) | 47.9 m | 7% | 97.71 |
+
+지형별 비교 (우리 모델 / baseline): 돌기 45.5 / 24.6, 요철 57.1 / 25.5, 파도 53.4 / 35.0
+
+체크포인트: `checkpoints/ant_bundle_rough_final.pt` (`--agent rsl_rl_finetune_cfg_entry_point`)
+
+### 14-1. 교차 평가: 학습 환경을 바꾸면 어떻게 되나
+
+| | 번들 검증 환경 (Test-Rough) | 우리 검증 환경 (Rough-Test) |
+|---|---|---|
+| 원본 baseline | 26.8 | 36.3 |
+| 우리 환경에서 학습한 모델 (`checkpoints/ant_final.pt`) | 48.5 | 69.8 |
+| 번들 환경에서 학습한 모델 (`checkpoints/ant_bundle_rough_final.pt`) | **52.7** | **84.1** |
+
+- 같은 검증 환경끼리 비교하면, **번들 환경에서 학습한 모델이 두 검증 환경 모두에서 더 좋습니다.**
+  - 번들 학습 환경의 특징: 출발 방향 ±180°, 초기 속도, 몸통 질량·무게중심 랜덤화, 긴 지형 칸에 파도·돌기
+- fig8의 53점과 fig3의 65점을 직접 비교하면 안 됩니다. 번들 검증 환경이 더 어렵습니다(baseline 26.8 대 36.3).
+- **주의:** 번들 학습 지형에는 파도와 돌기(≤5 cm)가 있습니다. 그래서 우리 검증 환경(파도, 장애물)은 번들 모델에게 완전히 미학습 지형은 아닙니다.
+- **7절 정정:** "메쉬 지형 상한 60~70, 오라클 67.2"는 **우리 학습 설정 안에서의 상한**이었습니다. 학습 환경을 바꾼 번들 모델이 우리 검증 환경에서 84.1을 냈습니다.
+
+
+## 15. 최종 모델 재학습 (2026-10-06, 제출용)
+
+**변경 내용**
+- 13절의 방법(교사 → 학생 → 조심스러운 미세조정)을 **단계마다 4096 envs × 1000 iter, 학습 seed 42**로 다시 학습했습니다.
+- 이 조건은 강의 Baseline의 학습 조건과 같습니다.
+- 출발점은 강의 Baseline(`checkpoints/ant_baseline.pt`)입니다. 학습 순서는 지형 정책 → 교사 → 학생 → 미세조정입니다.
+- **최종 체크포인트는 마지막 iteration**입니다. 처음 보는 환경 점수로 고르지 않았습니다.
+- 스크립트와 기록
+  - 학습: `scripts/final/train_final.sh`
+  - 평가: `scripts/final/eval_final.sh`
+  - 학습 로그: `results/final/train_*.log`
+  - 단계별 체크포인트: `results/final/lineage.txt`
+
+**공식 출력** (`results/final/official_*.txt`)
+
+| | 기존 환경 | 처음 보는 환경 | 새 환경 예시 (`ant_new_env_cfg.py`) |
+|---|---|---|---|
+| Baseline | 129.57 ± 29.68 | 36.28 ± 18.29 | 12.30 ± 12.06 |
+| **최종 (`checkpoints/ant_final.pt`)** | 126.72 ± 28.42 | **69.29 ± 21.90** | **38.20 ± 31.90** |
+
+**체크포인트 정정**
+- 13절 끝에 적힌 최종 정책(시드 42 미세조정 1500 iter, 147.1 / 59.8)과, 그 뒤 `checkpoints/ant_final.pt`에 들어 있던 파일은 서로 달랐습니다.
+- 당시 파일은 `ftsafe_s1`의 iter 500 체크포인트였고, 점수는 127.3 / 69.8입니다.
+- 그 파일은 `checkpoints/archive/ant_final_prev_ftsafe_s1_it500.pt`로 옮겨 보관했습니다.
+- `checkpoints/ant_final.pt`는 이번 재학습 결과로 교체했습니다.

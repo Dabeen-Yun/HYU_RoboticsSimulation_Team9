@@ -1,0 +1,4 @@
+expert   logs/rsl_rl/ant_rough/2026-10-06_20-42-24_final4096_expert/model_999.pt
+teacher  logs/rsl_rl/ant_rma/2026-10-06_20-56-40_final4096_teacher/model_999.pt
+student  logs/rsl_rl/ant_rma/2026-10-06_21-12-35_final4096_student/model_999.pt
+final    logs/rsl_rl/ant_rma/2026-10-06_21-36-47_final4096_ft/model_999.pt -> checkpoints/ant_final.pt

@@ -1,0 +1,29 @@
+== 1/4 terrain expert, warm-started from the baseline (20:42)
+actor.0.weight: (400, 60) -> (400, 333)
+critic.0.weight: (400, 60) -> (400, 333)
+std: [0.037 0.016 0.013 0.029 0.007 0.036 0.05  0.026] -> 0.2
+saved logs/rsl_rl/ant_rough/final4096_warmstart/model_0.pt
+ls: cannot access 'logs/rsl_rl/ant_rough/2026-10-05_01-12-58_v1_logs/rsl_rl/ant_rough/2026-10-05_01-41-36_v2': No such file or directory
+ls: cannot access '/model_*.pt': No such file or directory
+== 2/4 teacher with privileged ground properties (20:55)
+usage: make_warmstart_checkpoint.py [-h] --src SRC --dst DST
+                                    [--new_inputs NEW_INPUTS] [--std STD]
+make_warmstart_checkpoint.py: error: argument --src: expected one argument
+== 1/4 terrain expert, warm-started from the baseline (20:56)
+== 2/4 teacher with privileged ground properties (20:56)
+actor.0.weight: (400, 333) -> (400, 656)
+critic.0.weight: (400, 333) -> (400, 656)
+std: [0.014 0.024 0.02  0.026 0.041 0.058 0.067 0.05 ] -> 0.2
+saved logs/rsl_rl/ant_rma/final4096_teacher_init/model_0.pt
+== 3/4 student distillation (21:12)
+student.0.weight (400, 653) teacher.0.weight (400, 656)
+saved logs/rsl_rl/ant_rma/final4096_student_init/model_0.pt
+== 4/4 conservative PPO fine-tuning (21:36)
+actor.0.weight (400, 653) critic.0.weight (400, 656)
+saved logs/rsl_rl/ant_rma/final4096_ft_init/model_0.pt
+expert   logs/rsl_rl/ant_rough/2026-10-06_20-42-24_final4096_expert/model_999.pt
+teacher  logs/rsl_rl/ant_rma/2026-10-06_20-56-40_final4096_teacher/model_999.pt
+student  logs/rsl_rl/ant_rma/2026-10-06_21-12-35_final4096_student/model_999.pt
+final    logs/rsl_rl/ant_rma/2026-10-06_21-36-47_final4096_ft/model_999.pt -> checkpoints/ant_final4096.pt
+PhysX errors in training logs: 0
+TRAINING DONE (21:52)

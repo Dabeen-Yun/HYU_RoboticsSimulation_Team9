@@ -1,0 +1,27 @@
+== 1/3 teacher PPO from scratch (18:52)
+== 2/3 student distillation (19:09)
+student.0.weight (400, 653) teacher.0.weight (400, 656)
+saved logs/rsl_rl/ant_rma/bundle_rough_student_init/model_0.pt
+== 3/3 conservative PPO fine-tuning (19:34)
+actor.0.weight (400, 653) critic.0.weight (400, 656)
+saved logs/rsl_rl/ant_rma/bundle_rough_ft_init/model_0.pt
+results/bundle_rough/train_ft.log:0
+results/bundle_rough/train_student.log:0
+results/bundle_rough/train_teacher.log:0
+== evaluation (19:51)
+baseline  test: [RESULT] Isaac-Ant-Test-Rough-v0: reward mean=26.803940, std=14.157589
+teacher   test: [RESULT] Isaac-Ant-RMA-Bundle-Rough-v0: reward mean=53.704475, std=15.742604
+student   test: [RESULT] Isaac-Ant-RMA-Bundle-Rough-v0: reward mean=55.957263, std=12.549522
+ours      test: [RESULT] Isaac-Ant-RMA-Bundle-Rough-v0: reward mean=52.661377, std=13.823862
+baseline  original: [RESULT] Isaac-Ant-v0: reward mean=129.568288, std=29.684868
+ours      original: [RESULT] Isaac-Ant-RMA-Flat-v0: reward mean=97.711961, std=27.049895
+== official play_one_episode.py output
+-- baseline
+[INFO] Completed first episodes: 100/100
+[RESULT] Episode reward total: mean=26.803940, std=14.157589
+[RESULT] Episode steps: mean=857.650000, std=218.163213
+-- ours
+[INFO] Completed first episodes: 100/100
+[RESULT] Episode reward total: mean=52.661377, std=13.823862
+[RESULT] Episode steps: mean=919.200000, std=161.690754
+PIPELINE DONE (19:53)

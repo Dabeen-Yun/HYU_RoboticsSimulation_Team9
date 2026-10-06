@@ -218,6 +218,101 @@ gym.register(
 
 
 
+
+##
+# [ant_robust_bundle] Teammate robustness experiment, merged from ant_robust_bundle.zip (2026-10-06).
+# Environments: ant_robust_env_cfg.py. Checkpoints: checkpoints/ant_robust_bundle/. Same 60-D observation and PPO
+# config as Isaac-Ant-v0. The Isaac-Ant-RMA-Bundle-* tasks further below are our sensor variants of its test envs.
+##
+
+_ROBUST_TASKS = {
+    # training variants
+    "Isaac-Ant-DR-v0": "AntDREnvCfg",
+    "Isaac-Ant-DR-Rough-v0": "AntDRRoughEnvCfg",
+    "Isaac-Ant-DR-Rough-PushNoise-v0": "AntDRRoughPushNoiseEnvCfg",
+    "Isaac-Ant-DR-Rough-Smooth-v0": "AntDRRoughSmoothEnvCfg",
+    "Isaac-Ant-DR-Rough-PushNoise-Smooth-v0": "AntDRRoughPushNoiseSmoothEnvCfg",
+    # unseen evaluation variants
+    "Isaac-Ant-Test-LowFriction-v0": "AntTestLowFrictionEnvCfg",
+    "Isaac-Ant-Test-Heavy-v0": "AntTestHeavyEnvCfg",
+    "Isaac-Ant-Test-WeakMotor-v0": "AntTestWeakMotorEnvCfg",
+    "Isaac-Ant-Test-Rough-v0": "AntTestRoughEnvCfg",
+    "Isaac-Ant-Test-Push-v0": "AntTestPushEnvCfg",
+    "Isaac-Ant-Test-Heading-v0": "AntTestHeadingEnvCfg",
+    "Isaac-Ant-Test-Combined-v0": "AntTestCombinedEnvCfg",
+    # teammate-terrain reconstruction (training variants + unseen evaluation)
+    "Isaac-Ant-DR-TM-v0": "AntDRTMEnvCfg",
+    "Isaac-Ant-DR-TM-PushNoise-v0": "AntDRTMPushNoiseEnvCfg",
+    "Isaac-Ant-DR-TM-Smooth-v0": "AntDRTMSmoothEnvCfg",
+    "Isaac-Ant-DR-TM-PushNoise-Smooth-v0": "AntDRTMPushNoiseSmoothEnvCfg",
+    "Isaac-Ant-Test-TM-v0": "AntTestTMEnvCfg",
+}
+
+for _task_id, _cfg_class in _ROBUST_TASKS.items():
+    gym.register(
+        id=_task_id,
+        entry_point="isaaclab.envs:ManagerBasedRLEnv",
+        disable_env_checker=True,
+        kwargs={
+            "env_cfg_entry_point": f"{__name__}.ant_robust_env_cfg:{_cfg_class}",
+            "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntPPORunnerCfg",
+        },
+    )
+
+
+# [ant_robust_bundle] Our sensor policy in the bundle's test envs (ant_rma_bundle_eval_cfg.py)
+for _key in ["LowFriction", "Heavy", "WeakMotor", "Rough", "Push", "Heading", "Combined", "TM"]:
+    gym.register(
+        id=f"Isaac-Ant-RMA-Bundle-{_key}-v0",
+        entry_point="isaaclab.envs:ManagerBasedRLEnv",
+        disable_env_checker=True,
+        kwargs={
+            "env_cfg_entry_point": f"{__name__}.ant_rma_bundle_eval_cfg:AntRMABundle{_key}EnvCfg",
+            "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMATeacherPPORunnerCfg",
+            "rsl_rl_student_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMAStudentPPORunnerCfg",
+            "rsl_rl_finetune_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMAFinetunePPORunnerCfg",
+        },
+    )
+
+# [ant_robust_bundle] Training env for our method on the bundle's training terrain (Isaac-Ant-DR-Rough-v0 + our sensors)
+gym.register(
+    id="Isaac-Ant-RMA-Bundle-DR-Rough-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.ant_rma_bundle_eval_cfg:AntRMABundleDRRoughEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMATeacherPPORunnerCfg",
+        "rsl_rl_distillation_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMADistillationRunnerCfg",
+        "rsl_rl_finetune_safe_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMAFinetuneSafePPORunnerCfg",
+        "rsl_rl_finetune_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMAFinetunePPORunnerCfg",
+    },
+)
+
+##
+# A new evaluation environment (ant_new_env_cfg.py): one definition, registered for the baseline and for our policy
+##
+
+gym.register(
+    id="Isaac-Ant-New-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.ant_new_env_cfg:AntNewEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntPPORunnerCfg",
+    },
+)
+
+gym.register(
+    id="Isaac-Ant-RMA-New-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    disable_env_checker=True,
+    kwargs={
+        "env_cfg_entry_point": f"{__name__}.ant_new_env_cfg:AntRMANewEnvCfg",
+        "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMATeacherPPORunnerCfg",
+        "rsl_rl_finetune_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:AntRMAFinetunePPORunnerCfg",
+    },
+)
+
 ##
 # Make the terrain-gated policy class visible to the RSL-RL runner (it resolves ``class_name`` in its own namespace).
 ##
